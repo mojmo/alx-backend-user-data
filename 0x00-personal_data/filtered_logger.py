@@ -9,27 +9,10 @@ fields with a redaction string.
 
 import logging
 import re
-from typing import List
+from typing import List, Tuple
 
 
-def filter_datum(
-        fields: List[str], redaction: str, message: str, separator: str
-        ) -> str:
-    """
-    Filters a log message by obfuscating specified fields.
-
-    Args:
-        fields: List of field names to obfuscate.
-        redaction: String to replace the value of obfuscated fields.
-        message: The log message string.
-        separator: Character separating fields in the log message.
-
-    Returns:
-        The filtered log message with obfuscated fields.
-    """
-    pattern = '|'.join([f'{field}=[^{separator}]*' for field in fields])
-    return re.sub(pattern, lambda m: f'{m.group().split("=")[0]}={redaction}',
-                  message)
+PII_FIELDS: Tuple[str, ...] = ("name", "email", "phone", "ssn", "password")
 
 
 class RedactingFormatter(logging.Formatter):
@@ -54,3 +37,38 @@ class RedactingFormatter(logging.Formatter):
         original_message = super(RedactingFormatter, self).format(record)
         return filter_datum(self.fields, self.REDACTION, original_message,
                             self.SEPARATOR)
+
+
+def filter_datum(
+        fields: List[str], redaction: str, message: str, separator: str
+        ) -> str:
+    """
+    Filters a log message by obfuscating specified fields.
+
+    Args:
+        fields: List of field names to obfuscate.
+        redaction: String to replace the value of obfuscated fields.
+        message: The log message string.
+        separator: Character separating fields in the log message.
+
+    Returns:
+        The filtered log message with obfuscated fields.
+    """
+    pattern = '|'.join([f'{field}=[^{separator}]*' for field in fields])
+    return re.sub(pattern, lambda m: f'{m.group().split("=")[0]}={redaction}',
+                  message)
+
+
+def get_logger() -> logging.Logger:
+    """Creates a logger for user data with a redacting formatter"""
+    logger = logging.getLogger("user_data")
+    logger.setLevel(logging.INFO)
+    logger.propagate = False
+
+    stream_handler = logging.StreamHandler()
+    formatter = RedactingFormatter(fields=PII_FIELDS)
+    stream_handler.setFormatter(formatter)
+
+    logger.addHandler(stream_handler)
+
+    return logger
