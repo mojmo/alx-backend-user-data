@@ -91,3 +91,28 @@ def get_db() -> mysql.connector.connection.MySQLConnection:
     )
 
     return connection
+
+
+def main():
+    """
+    Retrieve all rows in the users table and display
+    each row under a filtered format
+    """
+    db = get_db()
+    cursor = db.cursor()
+    cursor.execute("SELECT * FROM users;")
+    logger = get_logger()
+
+    field_names = [i[0] for i in cursor.description]
+    for row in cursor.fetchall():
+        record = {field_names[i]: row[i] for i in range(len(field_names))}
+        log_msg = "; ".join(
+            [f"{key}={value}" for key, value in record.items()])
+        logger.info(log_msg)
+
+    cursor.close()
+    db.close()
+
+
+if __name__ == "__main__":
+    main()
