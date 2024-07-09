@@ -36,9 +36,17 @@ class Auth():
 
         # Check if path is a perfect match or a prefix of any excluded path
         for excluded_path in excluded_paths:
-            excluded_path = excluded_path.rstrip('/')
-            if path == excluded_path or path.startswith(excluded_path + '/'):
-                return False
+            # Handle wildcard at the end of the excluded path
+            if excluded_path.endswith('*'):
+                if path.startswith(excluded_path.rstrip('*')):
+                    return False
+            else:
+                # Standardize excluded path by removing
+                # trailing slash (if present)
+                excluded_path = excluded_path.rstrip('/')
+                if (path == excluded_path or
+                   path.startswith(excluded_path + '/')):
+                    return False
 
         # No match found, authentication required
         return True
