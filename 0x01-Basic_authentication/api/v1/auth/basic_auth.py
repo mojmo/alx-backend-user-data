@@ -48,7 +48,7 @@ class BasicAuth(Auth):
            not decoded_base64_authorization_header.count(':')):
             return None, None
 
-        user_credentials = decoded_base64_authorization_header.split(':')
+        user_credentials = decoded_base64_authorization_header.split(':', 1)
 
         return user_credentials[0], user_credentials[1]
 
