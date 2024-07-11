@@ -5,6 +5,7 @@ This module provides an `Auth` class for basic authentication functionalities
 in a Flask application.
 """
 
+from os import getenv
 from typing import List, TypeVar
 from flask import request
 
@@ -67,3 +68,20 @@ class Auth():
         authorization header (if available).
         """
         return None
+
+    def session_cookie(self, request=None):
+        """
+        Attempts to extract the session cookie from the Flask request object
+        (if provided).
+        """
+        if request is None:
+            return None
+
+        SESSION_NAME = getenv("SESSION_NAME")
+
+        if SESSION_NAME is None:
+            return None
+
+        session_id = request.cookies.get(SESSION_NAME)
+
+        return session_id
