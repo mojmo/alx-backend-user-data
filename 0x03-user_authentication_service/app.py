@@ -9,7 +9,7 @@ It demonstrates how to create a basic JSON API endpoint using Flask.
 The app responds to GET requests at the root URL with a JSON message.
 """
 
-from typing import Union
+from typing import Tuple, Union
 from flask import Flask, request, jsonify, abort, make_response, redirect
 from auth import Auth
 
@@ -111,6 +111,30 @@ def profile() -> Union[jsonify, abort]:
         abort(403)
 
     return jsonify({"email": user.email}), 200
+
+
+@app.route('/reset_password', methods=['POST'])
+def get_reset_password_token() -> Tuple[jsonify, int]:
+    """
+    Generates a reset password token for a user with the given email.
+
+    The request is expected to contain form data with the "email" field.
+
+    Returns:
+        Tuple[jsonify, int]: A tuple containing a JSON response with the
+        user's email and the reset token, and an HTTP status code.
+    """
+    email: str = request.form.get('email')
+    if not email:
+        abort(400)
+
+    try:
+        reset_token: str = AUTH.get_reset_password_token(email)
+    except ValueError:
+        # If the email is not registered, respond with a 403 status code
+        abort(403)
+
+    return jsonify({"email": email, "reset_token": reset_token}), 200
 
 
 if __name__ == "__main__":
