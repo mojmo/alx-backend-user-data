@@ -4,6 +4,7 @@
 Authentication module for the authentication database.
 """
 
+from typing import Union
 import bcrypt
 from db import DB
 import uuid
@@ -89,5 +90,25 @@ class Auth:
             session_id = _generate_uuid()
             self._db.update_user(user.id, session_id=session_id)
             return session_id
+        except NoResultFound:
+            return None
+
+    def get_user_from_session_id(self, session_id: str) -> Union[User, None]:
+        """
+        Retrieve a user based on a session ID.
+
+        Args:
+            session_id (str): The session ID to look up.
+
+        Returns:
+            User or None: The corresponding User object if found,
+            otherwise None.
+        """
+        if session_id is None:
+            return None
+
+        try:
+            user = self._db.find_user_by(session_id=session_id)
+            return user
         except NoResultFound:
             return None
