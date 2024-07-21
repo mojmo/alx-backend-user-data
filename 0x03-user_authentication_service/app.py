@@ -9,7 +9,8 @@ It demonstrates how to create a basic JSON API endpoint using Flask.
 The app responds to GET requests at the root URL with a JSON message.
 """
 
-from flask import Flask, request, jsonify, abort, make_response
+from typing import Union
+from flask import Flask, request, jsonify, abort, make_response, redirect
 from auth import Auth
 
 app = Flask(__name__)
@@ -64,6 +65,30 @@ def login():
         )
     response.set_cookie('session_id', session_id)
     return response
+
+
+@app.route('/sessions', methods=['DELETE'])
+def logout() -> Union[redirect, abort]:
+    """
+    Logout the user by destroying the session.
+
+    Returns:
+        Union[redirect, abort]: Redirects to the root route if the session is
+        successfully destroyed, otherwise returns a 403 HTTP status.
+    """
+    session_id = request.cookies.get('session_id')
+
+    if session_id is None:
+        abort(403)
+
+    user = AUTH.get_user_from_session_id(session_id)
+
+    if user is None:
+        abort(403)
+
+    AUTH.destroy_session(user.id)
+
+    return redirect('/')
 
 
 if __name__ == "__main__":
