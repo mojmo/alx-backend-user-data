@@ -91,5 +91,27 @@ def logout() -> Union[redirect, abort]:
     return redirect('/')
 
 
+@app.route('/profile', methods=['GET'])
+def profile() -> Union[jsonify, abort]:
+    """
+    Retrieve the user's profile information.
+
+    Returns:
+        Union[jsonify, abort]: A JSON response with the user's email if the
+        session ID is valid, otherwise an abort with a 403 HTTP status.
+    """
+    session_id = request.cookies.get('session_id')
+
+    if session_id is None:
+        abort(403)
+
+    user = AUTH.get_user_from_session_id(session_id)
+
+    if user is None:
+        abort(403)
+
+    return jsonify({"email": user.email}), 200
+
+
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port="5000")
