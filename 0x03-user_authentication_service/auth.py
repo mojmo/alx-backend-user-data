@@ -131,3 +131,29 @@ class Auth:
             pass
 
         return None
+
+    def get_reset_password_token(self, email: str) -> str:
+        """
+        Generates a reset password token for a user with the given email.
+
+        Args:
+            email (str): The email of the user requesting the reset
+            password token.
+
+        Returns:
+            str: The generated reset password token.
+
+        Raises:
+            ValueError: If the user with the given email does not exist.
+        """
+        try:
+            user = self._db.find_user_by(email=email)
+        except NoResultFound:
+            raise ValueError("User with email {} does not exist".format(email))
+
+        reset_token = str(uuid.uuid4())
+
+        # Update the user's reset_token field in the database
+        self._db.update_user(user.id, reset_token=reset_token)
+
+        return reset_token
