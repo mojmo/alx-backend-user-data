@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 """
-Integration tests for the web server.
+Integration test.
 """
 
 import requests
